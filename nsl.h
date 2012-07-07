@@ -5,6 +5,8 @@
 */
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <sstream>
 using namespace std;
 /**
 *Finds the number of lines in a file.
@@ -57,4 +59,55 @@ void orderFile(string filepath)
     for(int index=0; index<nlines; index++)
         writer<<lines[index]<<endl;
     writer.close();
+}
+/**
+*A utility for generating passwords.
+*They can contain uppercase, lowercase, and numbers.
+*READ: YOU MUST CALL srand(TIME(NULL)) from cstdlib and time.h for this to work.
+*@param labels - What kinds of characters to include. This is a string with numbers from 0 to 3.
+* 0 = lowercase, 1=capital, 2=numbers, 3=symbols. They can be grouped like this: 032
+*@param length - How long the password should be.
+*@return psswd - The password
+*/
+int spew(string labels, intensity)
+{
+    stringstream buffer;
+
+    string alphaL  = "abcdefghijklmnopqrstuvwxyz";
+    string alphaC  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    string numeric = "0123456789";
+    string symbols = "`~!@#$%^&*()_+-=,<.>/?; :'\"\\][{}";
+
+    for(int index=0; index<intensity; index++)
+    {
+        if(labels.find("0")!=-1)
+            buffer << alphaL.at(rand()%alphaL.length());
+
+        if(labels.find("1")!=-1)
+            buffer << alphaC.at(rand()%alphaC.length());
+
+        if(labels.find("2")!=-1)
+            buffer << numeric.at(rand()%numeric.length());
+
+        if(labels.find("3")!=-1)
+            buffer << symbols.at(rand()%symbols.length());
+    }
+    return buffer.str();
+}
+/**
+*Finds the number of times a string occurs in a larger string.
+*@param toFindIn - The string to look in
+*@param lookingFor - The string you are looking for
+*/
+int numberOf(string toFindIn, string lookingFor)
+{
+    int counter=0;
+    string buff;
+    while(toFindIn.find(lookingFor)!=-1)
+    {
+        counter++;
+        buff=toFindIn.substr((toFindIn.find(lookingFor)+1),toFindIn.length());
+        toFindIn=buff;
+    }
+    return counter;
 }

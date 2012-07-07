@@ -1,1 +1,4 @@
 This is a library with useful C++ functions. It is not developed directly and therfore may go outdated for long periods of time. When other projects require a function that is portable and usable, it is put here for later use in other projects.
+
+Changelog
+Added numberOf()
