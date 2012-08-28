@@ -1,12 +1,13 @@
 
 /*
-*This software is licensed under the Noran Restricted Public License (0.02)
+*This software is licensed under the GNU General Public License(V2)
 *Author: Norton "dymatic" Jenkins <kzzear@hotmail.com>
 */
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <sstream>
+#include <vector>
 using namespace std;
 /**
 *Finds the number of lines in a file.
@@ -51,7 +52,9 @@ void orderFile(string filepath)
 
             lines[index]=lines[index+1];
             lines[index+1]=buffer;
-            index--;
+
+            if(index>0)
+                index--;
         }
     }
     file.close();
@@ -69,7 +72,7 @@ void orderFile(string filepath)
 *@param length - How long the password should be.
 *@return psswd - The password
 */
-int spew(string labels, intensity)
+string spew(string labels, int intensity)
 {
     stringstream buffer;
 
@@ -80,16 +83,16 @@ int spew(string labels, intensity)
 
     for(int index=0; index<intensity; index++)
     {
-        if(labels.find("0")!=-1)
+        if(labels.find("0")!=-1)//Lower-case level
             buffer << alphaL.at(rand()%alphaL.length());
 
-        if(labels.find("1")!=-1)
+        if(labels.find("1")!=-1)//Upper-case level
             buffer << alphaC.at(rand()%alphaC.length());
 
-        if(labels.find("2")!=-1)
+        if(labels.find("2")!=-1)//Numeric level
             buffer << numeric.at(rand()%numeric.length());
 
-        if(labels.find("3")!=-1)
+        if(labels.find("3")!=-1)//Symbol level
             buffer << symbols.at(rand()%symbols.length());
     }
     return buffer.str();
@@ -106,8 +109,122 @@ int numberOf(string toFindIn, string lookingFor)
     while(toFindIn.find(lookingFor)!=-1)
     {
         counter++;
-        buff=toFindIn.substr((toFindIn.find(lookingFor)+1),toFindIn.length());
+        buff=toFindIn.substr((toFindIn.find(lookingFor)+1),toFindIn.length());//Bump beyond lookingFor
         toFindIn=buff;
     }
     return counter;
+}
+
+/**
+*Replaces all of the text in a string with specified text.
+*@param str - The string to change in
+*@param from - The text to replace in str
+*@param to - The string that from changes to in str
+*/
+void replaceAll(std::string& str,  std::string& from,  std::string& to)
+{
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos)
+    {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+
+/**
+*Makes the input conform to a certain set of standards.
+*Whitespace is trimmed and it is made lowercase.
+*@param input - The string to sanitize.
+*@return rMsg - The sanitized message
+*/
+string sanitizeInput(string input)
+{
+    string punc[14]= {".",","," ",":",";","(",")","*","^","_","-","[","]","?"};//To remove
+    string whitespace="";
+
+
+    string returnMessage;
+
+    for(unsigned int index=0; index<14; index++)//Removes punctuation. Note undeclared constant
+        replaceAll(input,punc[index],whitespace);
+
+    for(unsigned int index=0; index<input.length(); index++)//Makes lowercase
+        returnMessage+=(tolower(input.at(index)));
+
+    return returnMessage;
+}
+
+/**
+*Splitstr is a very important function.
+*This finds text in between two magic characters and removes it from the string.
+*
+*Here it is used for comments in a learn file.
+*@param toSplit   - The string to remove sensitive strings from.
+*@param magicahar - The character used in the code file to denote a sensitive string. "$" is the standard.
+*/
+void splitstr(string &toSplit, string magichar)
+{
+    if(toSplit.find(magichar)!=-1)
+    {
+        /*Objects*/
+        stringstream buffer;
+
+        string copy;//A copy of toSplit
+
+        /*Initializations*/
+        copy=toSplit;
+
+        /*Body*/
+        if(toSplit.find(magichar)!=-1)//Put the text before first magichar in buffer
+            buffer<<copy.substr(0,toSplit.find(magichar));
+
+        if(copy.find(magichar)!=-1)//Make copy equal to the whole string minus the part up to the first magichar
+            copy=copy.substr(toSplit.find(magichar)+1,toSplit.length());
+
+        if(copy.find(magichar)!=-1)//Put the position of the magichar+1 in the buffer.
+            buffer<<copy.substr(copy.find("~")+1,copy.length());
+
+        toSplit=buffer.str();
+    }//End if
+}
+
+/**
+*Removes a comment in between ~~s.
+*@param comment - The reference to the string containing a comment
+*@param delim   - The deliminator (~ is default)
+*/
+void rmComment(string &comment, char *delim)
+{
+    if(comment.find(delim)!=-1&&numberOf(comment,delim)%2==0)   //Delims have to be even ex: ~remove me~
+    {
+        for(int index=0; index<numberOf(comment,delim)/2; index++)   // /2 because splitstr() removes both.
+        {
+            splitstr(comment,delim);
+        }
+
+    }
+}
+
+/**
+*Splits a string on a given character, returning an array equal to the split string.
+*@param message - The string to split from
+*@param delim - What to split on
+*@return vStr - The vector of strings split from the message
+*/
+vector<string> splitOn(string message, string delim)
+{
+
+    vector<string> rString(0);
+
+    for(int index=0; message.find(delim)!=-1; index++)
+    {
+        rString.push_back(message.substr(0, message.find(delim)));
+        message = message.substr(message.find(delim)+1, message.length());
+    }
+
+    if(message.find("_")!=-1)//splitOn should not be used with whole IO identifier strings
+        message = message.substr(0, message.find("_")-1);
+
+    rString.push_back(message);
+    return rString;
 }
